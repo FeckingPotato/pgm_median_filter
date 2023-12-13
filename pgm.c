@@ -121,7 +121,16 @@ pgm_err_e pgm_read(char *file_path, pgm_t **pgm)
 	{
 		for (pgm_size i = 0; i < ((*pgm)->size_x * (*pgm)->size_y); i++)
 		{
-			fread(&((*pgm)->values[i]), sizeof(pgm_value), 1, file);
+            int size;
+            if ((*pgm)->max_value < 256)
+            {
+                size = sizeof(char);
+            }
+            else
+            {
+                size = sizeof(pgm_value);
+            }
+			fread(&((*pgm)->values[i]), size, 1, file);
 		}
 	}
 
