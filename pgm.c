@@ -8,9 +8,16 @@
 
 #define BUFFER_SIZE 8
 #define BUFFER_READ_FORMAT "%7s"
-#define FILE_HEADER "P2"
+#define ASCII_FILE_HEADER "P2"
+#define BINARY_FILE_HEADER "P5"
 #define FILE_HEADER_SIZE 2
 #define STRTOUL_BASE 10
+
+typedef enum {
+    UNKNOWN,
+    ASCII,
+    BINARY
+} file_type_e;
 
 static pgm_err_e fwrite_header(FILE *file);
 
@@ -53,6 +60,7 @@ _exit:
 pgm_err_e pgm_read(char *file_path, pgm_t **pgm)
 {
     pgm_err_e result = PGM_SUCCESS;
+    file_type_e file_type = UNKNOWN;
     char *endptr;
     char buffer[BUFFER_SIZE];
     FILE *file = NULL;
@@ -63,7 +71,20 @@ pgm_err_e pgm_read(char *file_path, pgm_t **pgm)
 
     /* checking header */
     fscanf(file, BUFFER_READ_FORMAT, buffer);
-    EXIT_IF_TRUE(strncmp(FILE_HEADER, buffer, FILE_HEADER_SIZE) != 0, PGM_FILE_TYPE_ERROR)
+    if (strncmp(ASCII_FILE_HEADER, buffer, FILE_HEADER_SIZE + 1) == 0)
+    {
+        file_type = ASCII;
+    }
+    else if (strncmp(BINARY_FILE_HEADER, buffer, FILE_HEADER_SIZE + 1) == 0)
+    {
+        file_type = BINARY;
+        fprintf(stderr, "Binary PGM files aren't yet supported\n");
+        EXIT_IF_TRUE(1, PGM_FILE_TYPE_ERROR)
+    }
+    else
+    {
+        EXIT_IF_TRUE(1, PGM_FILE_TYPE_ERROR)
+    }
 
     /* allocating structure memory */
     *pgm = (pgm_t *) calloc(sizeof(pgm_t), 1);
@@ -207,7 +228,7 @@ static pgm_err_e fwrite_header(FILE *file)
 {
     pgm_err_e result = PGM_SUCCESS;
     char buffer[BUFFER_SIZE];
-    sprintf(buffer, "%s ", FILE_HEADER);
+    sprintf(buffer, "%s ", ASCII_FILE_HEADER);
     if (fwrite(buffer, FILE_HEADER_SIZE + 1, 1, file) != 1)
     {
         result = PGM_FILE_WRITE_ERROR;
