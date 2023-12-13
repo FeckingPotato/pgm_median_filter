@@ -18,7 +18,8 @@ pgm_err_e pgm_add_noise(pgm_t *input)
     {
         for (pgm_size j = 0; j < input->size_y; j++)
         {
-            pgm_value value = TEST_MAX_VALUE / 2;
+            pgm_value value;
+			pgm_get_value(i, j, &value, input);
             /* creating a gray image with 10% probability of pixel being noisy */
             if (rand() % 101 <= 10)
             {
@@ -38,6 +39,10 @@ pgm_err_e pgm_generate_noisy_image(pgm_size size_x, pgm_size size_y, pgm_t **out
     result = pgm_init(size_x, size_y, TEST_MAX_VALUE, output);
     EXIT_IF_TRUE(result != PGM_SUCCESS, result)
 
+	for (pgm_size i = 0; i < size_x * size_y; i++)
+	{
+		(*output)->values[i] = TEST_MAX_VALUE / 2;
+	}
     pgm_add_noise(*output);
 
 _exit:
