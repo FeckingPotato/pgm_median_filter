@@ -13,6 +13,7 @@
 
 #define EXAMPLE_COMMAND "example"
 #define FILE_COMMAND "file"
+#define FILE_NOISE_COMMAND "file_noise"
 #define EXAMPLE_NOISY_PATH "pgm_noisy.pgm"
 #define EXAMPLE_FILTERED_PATH "pgm_filtered.pgm"
 
@@ -20,7 +21,8 @@ typedef enum
 {
     UNKNOWN,
     TEST,
-    IMAGE
+    IMAGE,
+    IMAGE_NOISE
 } program_modes_e;
 
 int main(int argc, char *argv[])
@@ -44,7 +46,7 @@ int main(int argc, char *argv[])
     }
     else if (argc == 4)
     {
-        if (strncmp(argv[1], FILE_COMMAND, sizeof(FILE_COMMAND)) != 0)
+        if (strncmp(argv[1], EXAMPLE_COMMAND, sizeof(EXAMPLE_COMMAND)) == 0)
         {
             printf("Example mode\n");
             size_x = strtoul(argv[1], NULL, 10);
@@ -56,12 +58,19 @@ int main(int argc, char *argv[])
             }
             mode = TEST;
         }
-        else if (strncmp(argv[1], EXAMPLE_COMMAND, sizeof(EXAMPLE_COMMAND)) != 0)
+        else if (strncmp(argv[1], FILE_COMMAND, sizeof(FILE_COMMAND)) == 0)
         {
             printf("Custom image mode\n");
-            input_path = argv[1];
-            output_path = argv[2];
+            input_path = argv[2];
+            output_path = argv[3];
             mode = IMAGE;
+        }
+        else if (strncmp(argv[1], FILE_NOISE_COMMAND, sizeof(FILE_NOISE_COMMAND)) == 0)
+        {
+            printf("Custom image mode (with additional noise)\n");
+            input_path = argv[2];
+            output_path = argv[3];
+            mode = IMAGE_NOISE;
         }
     }
     else
@@ -71,7 +80,9 @@ int main(int argc, char *argv[])
                "./median_filter example <size_x> <size_y> - generates a random <size_x> by <size_y> gray image (saved"
                " as "EXAMPLE_NOISY_PATH") and filters it (saved as "EXAMPLE_FILTERED_PATH")\n"
                "./median_filter file <input_path> <output_path> - filters a pgm image and saves it in a different"
-               "file\n");
+               "file\n"
+               "./median_filter file_noise <input_path> <output_path> - same as the option above, but it also adds "
+               "noise to the input file (saved to )"EXAMPLE_NOISY_PATH"\n");
         goto _exit;
     }
     if (mode == TEST)
@@ -100,9 +111,27 @@ int main(int argc, char *argv[])
             goto _exit;
         }
     }
+    else if (mode == IMAGE_NOISE)
+    {
+        printf("Reading an image from %s\n", input_path);
+        result = pgm_read(input_path, &first_pgm);
+        if (result != PGM_SUCCESS)
+        {
+            printf("Unable to read pgm image, exiting\n");
+            goto _exit;
+        }
+        printf("Adding noise to the image\n");
+        pgm_add_noise(first_pgm);
+        result = pgm_write(EXAMPLE_NOISY_PATH, first_pgm);
+        if (result != PGM_SUCCESS)
+        {
+            printf("Unable to save the generated image, exiting\n");
+            goto _exit;
+        }
+    }
     else
     {
-        printf("This shouldn't have happened, exiting\n");
+        printf("Unknown option\n");
         goto _exit;
     }
     printf("Filtering the image\n");

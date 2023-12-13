@@ -11,6 +11,25 @@ static void fill_window(pgm_size x, pgm_size y,
 static pgm_value find_median(pgm_size window_size_x, pgm_size window_size_y, pgm_value *window);
 static int sort_compare(const void *a, const void *b);
 
+pgm_err_e pgm_add_noise(pgm_t *input)
+{
+    pgm_err_e result = PGM_SUCCESS;
+    for (pgm_size i = 0; i < input->size_x; i++)
+    {
+        for (pgm_size j = 0; j < input->size_y; j++)
+        {
+            pgm_value value = TEST_MAX_VALUE / 2;
+            /* creating a gray image with 10% probability of pixel being noisy */
+            if (rand() % 101 <= 10)
+            {
+                value -= rand() % TEST_NOISE_THRESHOLD;
+            }
+            pgm_set_value(i, j, value, input);
+        }
+    }
+    return result;
+}
+
 pgm_err_e pgm_generate_noisy_image(pgm_size size_x, pgm_size size_y, pgm_t **output)
 {
     pgm_err_e result = PGM_SUCCESS;
@@ -19,19 +38,8 @@ pgm_err_e pgm_generate_noisy_image(pgm_size size_x, pgm_size size_y, pgm_t **out
     result = pgm_init(size_x, size_y, TEST_MAX_VALUE, output);
     EXIT_IF_TRUE(result != PGM_SUCCESS, result)
 
-    for (pgm_size i = 0; i < size_x; i++)
-    {
-        for (pgm_size j = 0; j < size_y; j++)
-        {
-            pgm_value value = TEST_MAX_VALUE / 2;
-            /* creating a gray image with 10% probability of pixel being noisy */
-            if (rand() % 101 <= 10)
-            {
-                value -= rand() % TEST_NOISE_THRESHOLD;
-            }
-            pgm_set_value(i, j, value, *output);
-        }
-    }
+    pgm_add_noise(*output);
+
 _exit:
     return result;
 }
