@@ -78,8 +78,6 @@ pgm_err_e pgm_read(char *file_path, pgm_t **pgm)
     else if (strncmp(BINARY_FILE_HEADER, buffer, FILE_HEADER_SIZE + 1) == 0)
     {
         file_type = BINARY;
-        fprintf(stderr, "Binary PGM files aren't yet supported\n");
-        EXIT_IF_TRUE(1, PGM_FILE_TYPE_ERROR)
     }
     else
     {
@@ -110,12 +108,22 @@ pgm_err_e pgm_read(char *file_path, pgm_t **pgm)
     EXIT_IF_TRUE((*pgm)->values == NULL, PGM_MALLOC_ERROR)
 
     /* reading values */
-    for (pgm_size i = 0; i < ((*pgm)->size_x * (*pgm)->size_y); i++)
-    {
-        fscanf(file, BUFFER_READ_FORMAT, buffer); /* reading size_y */
-        (*pgm)->values[i] = strtoul(buffer, &endptr, STRTOUL_BASE);
-        EXIT_IF_TRUE(endptr[0] != '\0', PGM_FILE_TYPE_ERROR)
-    }
+	if (file_type == ASCII)
+	{
+		for (pgm_size i = 0; i < ((*pgm)->size_x * (*pgm)->size_y); i++)
+		{
+			fscanf(file, BUFFER_READ_FORMAT, buffer);
+			(*pgm)->values[i] = strtoul(buffer, &endptr, STRTOUL_BASE);
+			EXIT_IF_TRUE(endptr[0] != '\0', PGM_FILE_TYPE_ERROR)
+		}
+	}
+	else
+	{
+		for (pgm_size i = 0; i < ((*pgm)->size_x * (*pgm)->size_y); i++)
+		{
+			fread(&((*pgm)->values[i]), sizeof(pgm_value), 1, file);
+		}
+	}
 
 _exit:
     if (file != NULL)
