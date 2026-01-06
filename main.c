@@ -76,13 +76,12 @@ int main(int argc, char *argv[])
     else
     {
         printf("Usage:\n"
-               "./median_filter - run example with default settings\n"
+               "./median_filter - run the example mode for a 256x256 image\n"
                "./median_filter example <size_x> <size_y> - generates a random <size_x> by <size_y> gray image (saved"
                " as "EXAMPLE_NOISY_PATH") and filters it (saved as "EXAMPLE_FILTERED_PATH")\n"
-               "./median_filter file <input_path> <output_path> - filters a pgm image and saves it in a different"
-               "file\n"
-               "./median_filter file_noise <input_path> <output_path> - same as the option above, but it also adds "
-               "noise to the input file (saved to )"EXAMPLE_NOISY_PATH"\n");
+               "./median_filter file <input_path> <output_path> - filter a pgm image\n"
+               "./median_filter file_noise <input_path> <output_path> - filter a pgm image with additional noise "
+               "(noisy image will be saved as "EXAMPLE_FILTERED_PATH")\n");
         goto _exit;
     }
     if (mode == TEST)
